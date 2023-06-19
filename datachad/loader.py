@@ -43,12 +43,15 @@ class AutoGitLoader:
             os.makedirs(DATA_PATH)
         repo_name = self.data_source.split("/")[-1].split(".")[0]
         repo_path = str(DATA_PATH / repo_name)
+        logger.debug("repo_name:%r, repo_path:%r" %(repo_name, repo_path))
         clone_url = self.data_source
+        logger.debug("clone_url:%r" %(clone_url))
         if os.path.exists(repo_path):
             clone_url = None
         branches = ["main", "master"]
         for branch in branches:
             try:
+                logger.debug("repo_path:%r, clone_url:%r, branch:%r" %(repo_path, clone_url, branch))
                 docs = GitLoader(repo_path, clone_url, branch).load()
                 break
             except Exception as e:
@@ -91,10 +94,12 @@ def load_document(
     mapping: dict = FILE_LOADER_MAPPING,
     default_loader: BaseLoader = UnstructuredFileLoader,
 ) -> Document:
+    logger.debug("file_path:%r, mapping:%r" %(file_path, mapping))
     # Choose loader from mapping, load default if no match found
     ext = "." + file_path.rsplit(".", 1)[-1]
     if ext in mapping:
         loader_class, loader_args = mapping[ext]
+        logger.debug("loader_class:%r, loader_args:%r" %(loader_class, loader_args))
         loader = loader_class(file_path, **loader_args)
     else:
         loader = default_loader(file_path)
@@ -124,6 +129,7 @@ def load_data_source(data_source: str) -> List[Document]:
     is_web = data_source.startswith("http")
     is_dir = os.path.isdir(data_source)
     is_file = os.path.isfile(data_source)
+    logger.debug("is_web:%r, is_dir:%r, is_file:%r" %(is_web, is_dir, is_file))
     docs = None
     try:
         if is_dir:
@@ -131,7 +137,9 @@ def load_data_source(data_source: str) -> List[Document]:
         elif is_file:
             docs = load_document(data_source)
         elif is_web:
+            logger.debug("data_source:%r, WEB_LOADER_MAPPING:%r" %(data_source, WEB_LOADER_MAPPING))
             docs = load_document(data_source, WEB_LOADER_MAPPING, WebBaseLoader)
+        # logger.debug("docs:%r" %(docs))
         return docs
     except Exception as e:
         error_msg = f"Failed to load your data source '{data_source}'. Consider contributing: {PROJECT_URL}"

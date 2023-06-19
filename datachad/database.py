@@ -20,9 +20,12 @@ def get_dataset_path(data_source: str, options: dict, credentials: dict) -> str:
 
 
 def get_vector_store(data_source: str, options: dict, credentials: dict) -> VectorStore:
+    logger.debug("data_source:%r, options:%r, credentials:%r" %(data_source, options, credentials))
     # either load existing vector store or upload a new one to the hub
     embeddings = get_embeddings(options, credentials)
+    logger.debug("embeddings:%r" %(embeddings))
     dataset_path = get_dataset_path(data_source, options, credentials)
+    logger.debug("dataset_path:%r" %(dataset_path))
     if deeplake.exists(dataset_path, token=credentials["activeloop_token"]):
         logger.info(f"Dataset '{dataset_path}' exists -> loading")
         vector_store = DeepLake(
@@ -34,12 +37,15 @@ def get_vector_store(data_source: str, options: dict, credentials: dict) -> Vect
     else:
         logger.info(f"Dataset '{dataset_path}' does not exist -> uploading")
         docs = load_data_source(data_source)
+        logger.debug("docs:%r, options:%r" %(len(docs), options))
         docs = split_docs(docs, options)
+        logger.debug("docs:%r" %(len(docs)))
         vector_store = DeepLake.from_documents(
             docs,
             embeddings,
             dataset_path=dataset_path,
             token=credentials["activeloop_token"],
         )
+        logger.debug("vector_store:%r" %(vector_store))
     logger.info(f"Vector Store {dataset_path} loaded!")
     return vector_store

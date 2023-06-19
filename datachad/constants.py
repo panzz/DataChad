@@ -1,7 +1,10 @@
 from pathlib import Path
 
+DEBUG = True
+
 PAGE_ICON = "🤖"
 APP_NAME = "DataChad"
+MODEL = "gpt-3.5-turbo"
 PROJECT_URL = "https://github.com/gustavz/DataChad"
 
 K = 6
@@ -16,11 +19,13 @@ MAXIMAL_MARGINAL_RELEVANCE = True
 
 ENABLE_ADVANCED_OPTIONS = True
 ENABLE_LOCAL_MODE = True
+# ENABLE_LOCAL_MODE = False
 
 MODEL_PATH = Path.cwd() / "models"
 GPT4ALL_BINARY = "ggml-gpt4all-j-v1.3-groovy.bin"
 
 DATA_PATH = Path.cwd() / "data"
+# DEFAULT_DATA_SOURCE = "https://github.com/panzz/DataChad.git"
 DEFAULT_DATA_SOURCE = "https://github.com/gustavz/DataChad.git"
 
 MODE_HELP = """

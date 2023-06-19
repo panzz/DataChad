@@ -8,9 +8,12 @@ from datachad.models import get_model
 def get_chain(
     data_source: str, options: dict, credentials: dict
 ) -> ConversationalRetrievalChain:
+    logger.debug("data_source:%r, options:%r, credentials:%r" %(data_source, options, credentials))
     # create the langchain that will be called to generate responses
     vector_store = get_vector_store(data_source, options, credentials)
+    logger.debug("vector_store:%r" %(vector_store))
     retriever = vector_store.as_retriever()
+    logger.debug("retriever:%r" %(retriever))
     # Search params "fetch_k" and "k" define how many documents are pulled from the hub
     # and selected after the document matching to build the context
     # that is fed to the model together with the user prompt
@@ -20,8 +23,11 @@ def get_chain(
         "fetch_k": options["fetch_k"],
         "k": options["k"],
     }
+    logger.debug("search_kwargs:%r" %(search_kwargs))
     retriever.search_kwargs.update(search_kwargs)
+    logger.debug("1 search_kwargs:%r" %(search_kwargs))
     model = get_model(options, credentials)
+    logger.debug("model:%r" %(model))
     chain = ConversationalRetrievalChain.from_llm(
         model,
         retriever=retriever,

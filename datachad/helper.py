@@ -91,6 +91,7 @@ def authentication_form() -> None:
             help=ACTIVELOOP_HELP,
             placeholder="Optional, using ours if empty",
         )
+        logger.debug("openai_api_key:%r, activeloop_token:%r, activeloop_org_name:%r" %(openai_api_key, activeloop_token, activeloop_org_name))
         submitted = st.form_submit_button("Submit")
         if submitted:
             authenticate(openai_api_key, activeloop_token, activeloop_org_name)
@@ -224,8 +225,8 @@ def authenticate(
     )
     activeloop_org_name = (
         activeloop_org_name
-        or os.environ.get("ACTIVELOOP_ORG_NAME")
-        or st.secrets.get("ACTIVELOOP_ORG_NAME")
+        or os.environ.get("ACTIVELOOP_ORG_ID")
+        or st.secrets.get("ACTIVELOOP_ORG_ID")
     )
     if not (openai_api_key and activeloop_token and activeloop_org_name):
         st.session_state["auth_ok"] = False
@@ -235,7 +236,13 @@ def authenticate(
         # Try to access openai and deeplake
         with st.spinner("Authentifying..."):
             openai.api_key = openai_api_key
-            openai.Model.list()
+            openai.api_base = "http://52.74.105.58/v1"
+            logger.debug("openai:%r" %(openai))
+            models = openai.Model.list()
+            logger.debug("model.id:%r" %(models.data[0].id))
+            # chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello world"}])
+            # logger.debug("model.content:%r" %(chat_completion.choices[0].message.content))
+
             deeplake.exists(
                 f"hub://{activeloop_org_name}/DataChad-Authentication-Check",
                 token=activeloop_token,
@@ -251,20 +258,25 @@ def authenticate(
     st.session_state["activeloop_token"] = activeloop_token
     st.session_state["activeloop_org_name"] = activeloop_org_name
     logger.info("Authentification successful!")
+    logger.debug("st.session_state:%r" %(st.session_state))
 
 
 def update_chain() -> None:
     # Build chain with parameters from session state and store it back
     # Also delete chat history to not confuse the bot with old context
     try:
+        logger.debug("st.session_state:%r" %(st.session_state))
         with st.session_state["info_container"], st.spinner("Building Chain..."):
             data_source = st.session_state["data_source"]
+            logger.debug("data_source:%r, uploaded_files:%r, data_source:%r" %(data_source, st.session_state["uploaded_files"], st.session_state["data_source"]))
             if st.session_state["uploaded_files"] == st.session_state["data_source"]:
                 # Save files uploaded by streamlit to disk and set their path as data source.
                 # We need to repeat this at every chain update as long as data source is the uploaded file
                 # as we need to delete the files after each chain build to make sure to not pollute the app
                 # and to ensure data privacy by not storing user data
                 data_source = save_files(st.session_state["uploaded_files"])
+                logger.debug("1 data_source:%r" %(data_source))
+            logger.debug("1 data_source:%r, st.session_state:%r" %(data_source, st.session_state))
             st.session_state["chain"] = get_chain(
                 data_source=data_source,
                 options={
@@ -288,13 +300,18 @@ def update_chain() -> None:
                     "activeloop_org_name": st.session_state["activeloop_org_name"],
                 },
             )
+            logger.debug("st.session_state[\"chain\"]:%r" %(st.session_state["chain"]))
+            logger.debug("uploaded_files:%r, data_source:%r" %(st.session_state["uploaded_files"], st.session_state["data_source"]))
             if st.session_state["uploaded_files"] == st.session_state["data_source"]:
                 # remove uploaded files from disk
                 delete_files(st.session_state["uploaded_files"])
             st.session_state["chat_history"] = []
+            logger.debug("st.session_state[\"chat_history\"]:%r" %(st.session_state["chat_history"]))
             msg = f"Data source **{st.session_state['data_source']}** is ready to go with model **{st.session_state['model']}**!"
+            logger.debug("msg:%r" %(msg))
             logger.info(msg)
             st.session_state["info_container"].info(msg, icon=PAGE_ICON)
+            logger.debug("st.session_state[\"info_container\"]:%r" %(st.session_state["info_container"]))
     except Exception as e:
         msg = f"Failed to build chain for data source **{st.session_state['data_source']}** with model **{st.session_state['model']}**: {e}"
         logger.error(msg)
