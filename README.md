@@ -80,4 +80,6 @@ If you like to contribute, feel free to grab any task
 
 https://www.activeloop.ai/resources/data-chad-an-ai-app-with-lang-chain-deep-lake-to-chat-with-any-data/
 
-streamlit run app.py
+streamlit run app.py --server.port 8080
+
+你好，列举出datachad的项目结构，并对源代码做简要说明
