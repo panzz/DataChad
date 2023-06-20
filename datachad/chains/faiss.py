@@ -13,7 +13,7 @@ def get_faiss_dataset_path(data_source: str, options: dict, credentials: dict) -
     logger.debug("data_source:%r, options:%r, credentials:%r" %(data_source, options, credentials))
     dataset_name = clean_string_for_storing(data_source)
     # we need to differntiate between differently chunked datasets
-    dataset_name += f"-{options['chunk_size']}-{options['chunk_overlap']}-{options['model'].embedding}.fass"
+    dataset_name += f"-{options['chunk_size']}-{options['chunk_overlap']}-{options['model'].embedding}"
     logger.debug("dataset_name:%r" %(dataset_name))
     # if options["mode"] == MODES.LOCAL:
     #     dataset_path = str(DATA_PATH / dataset_name)
@@ -37,22 +37,23 @@ def get_faiss_vector_store(data_source: str, options: dict, credentials: dict) -
     logger.debug("docs:%r, options:%r" %(len(docs), options))
     logger.debug("dataset_path(%r):%r" %(dataset_path, os.path.isfile(dataset_path)))
     if len(docs) > 0:
-        if dataset_path and os.path.isfile(dataset_path):
-            vector_store = load_vector_store(dataset_path, embeddings)
-            logger.debug("load_vector_store vector_store:%r" %(vector_store))
-            vector_store.add_documents(docs)
-            logger.debug("add_documents vector_store:%r" %(vector_store))
-        else:
-            logger.info("Dataset %r does not exist -> uploading" %(dataset_path))
-            docs = split_docs(docs, options)
-            logger.debug("load_vector_store embeddings:%r" %(embeddings))
-            try:
+        # if dataset_path and os.path.isfile(dataset_path):
+        try:
+            if dataset_path and os.path.isdir(dataset_path) and "index.faiss" in os.listdir(dataset_path):
+                vector_store = load_vector_store(dataset_path, embeddings)
+                logger.debug("add_documents load_vector_store vector_store:%r" %(vector_store))
+                vector_store.add_documents(docs)
+                logger.debug("add_documents vector_store:%r" %(vector_store))
+            else:
+                logger.info("Dataset %r does not exist -> uploading" %(dataset_path))
+                docs = split_docs(docs, options)
+                logger.debug("from_documents load_vector_store embeddings:%r" %(embeddings))
                 vector_store = FAISS.from_documents(docs, embeddings)  ##docs 为Document列表
-                logger.debug("load_vector_store vector_store:%r" %(vector_store))
-            except Exception as e:
-                logger.error(e)
-                logger.info(f"{file} 未能成功加载")
-            logger.debug("from_documents vector_store:%r" %(vector_store))
+                logger.debug("from_documents load_vector_store vector_store:%r" %(vector_store))
+        except Exception as e:
+            logger.error(e)
+            # logger.info(f"{file} 未能成功加载")
+        logger.debug("from_documents vector_store:%r" %(vector_store))
         vector_store.save_local(dataset_path)
         logger.info(f"Vector Store {dataset_path} loaded!")
         return vector_store
