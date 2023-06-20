@@ -1,8 +1,8 @@
 from langchain.chains import ConversationalRetrievalChain
 
 # from datachad.database import get_vector_store
-from datachad.vector_db.deeplake import get_deeplake_vector_store
-from datachad.vector_db.faiss import get_faiss_vector_store
+from datachad.chains.deeplake import get_deeplake_vector_store
+from datachad.chains.faiss import get_faiss_vector_store
 from datachad.logging import logger
 from datachad.models import get_model
 
@@ -56,8 +56,8 @@ def get_faiss_chain(
     # and selected after the document matching to build the context
     # that is fed to the model together with the user prompt
     search_kwargs = {
-        "maximal_marginal_relevance": options["maximal_marginal_relevance"],
-        "distance_metric": options["distance_metric"],
+        # "maximal_marginal_relevance": options["maximal_marginal_relevance"],
+        # "distance_metric": options["distance_metric"],
         "fetch_k": options["fetch_k"],
         "k": options["k"],
     }
