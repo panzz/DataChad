@@ -1,4 +1,5 @@
 import os
+import pickle
 
 import deeplake
 import openai
@@ -29,8 +30,9 @@ from datachad.constants import (
     K,
 )
 from datachad.io import delete_files, save_files
-from datachad.logging import logger
+from utils.log import logger
 from datachad.models import MODELS, MODES
+from utils.dfa import DFA
 
 # loads environment variables
 load_dotenv()
@@ -334,12 +336,23 @@ def update_usage(cb: OpenAICallbackHandler) -> None:
 
 
 def generate_response(prompt: str) -> str:
+    logger.debug("origin prompt:%r" %(prompt))
+    # 1.可配置敏感词的 词库
+    dfa = DFA()
+    prompt = dfa.filter_all(prompt)
+    logger.debug(f"dfa.filter_all prompt: {prompt}")
+    # 2.防python代码注入
+    # https://www.zhihu.com/tardis/zm/art/22776972?source_id=1003
+    # prompt = pickle.dumps(prompt)
+    # logger.debug(f"pickle.dumps prompt: {prompt}")
+    # 4.暴力和隐私数据，防止数据泄漏
     # call the chain to generate responses and add them to the chat history
     with st.spinner("Generating response"), get_openai_callback() as cb:
         response = st.session_state["chain"](
             {"question": prompt, "chat_history": st.session_state["chat_history"]}
         )
         update_usage(cb)
-    logger.info(f"Response: '{response}'")
+    # logger.info(f"Response: '{response}'")
+    logger.debug("response:%r" %(response))
     st.session_state["chat_history"].append((prompt, response["answer"]))
     return response["answer"]

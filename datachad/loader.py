@@ -27,7 +27,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from tqdm import tqdm
 
 from datachad.constants import DATA_PATH, PROJECT_URL
-from datachad.logging import logger
+from utils.log import logger
 from datachad.models import get_tokenizer
 
 
