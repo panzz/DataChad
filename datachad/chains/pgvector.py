@@ -6,7 +6,7 @@ from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from datachad.constants import DATA_PATH
 from datachad.io import clean_string_for_storing
 from datachad.loader import load_data_source, split_docs
-from datachad.logging import logger
+from utils.log import logger
 from datachad.models import MODES, get_embeddings
 
 

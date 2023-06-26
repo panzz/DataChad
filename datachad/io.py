@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from datachad.constants import DATA_PATH
-from datachad.logging import logger
+from utils.log import logger
 
 
 def clean_string_for_storing(string: str) -> str:

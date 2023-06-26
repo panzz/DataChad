@@ -4,7 +4,7 @@ from langchain.chains import ConversationalRetrievalChain
 from datachad.chains.deeplake import get_deeplake_vector_store
 from datachad.chains.faiss import get_faiss_vector_store
 from datachad.chains.pgvector import get_pavector_vector_store
-from datachad.logging import logger
+from utils.log import logger
 from datachad.models import get_model
 
 
