@@ -7,13 +7,15 @@ CONSTANTS_ROOT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "
 DEFAULT_SENSITIVE_PATH = os.path.join(CONSTANTS_ROOT_PATH, 'sensitive_words.txt')
 # print('DEFAULT_SENSITIVE_PATH:%r'%(DEFAULT_SENSITIVE_PATH))
 
-class DFA:
+class SensitiveWordFilter:
     def __init__(self, path=DEFAULT_SENSITIVE_PATH, replace_char='*'):
         """
-        算法初始化
+        算法敏感词过滤初始化，采用DFA(Deterministic Finite Automaton)算法
+        DFA 算法是通过提前构造出一个 树状查找结构(实际上应该说是一个 森林)，之后根据输入在该树状结构中就可以进行非常高效的查找。
+        参考：https://github.com/spirit-yzk/sensitive_words_blocking/blob/master/dfa.py
         :param path:词库地址
         """
-        print(f'init DFA path: {path}')
+        # print(f'init SensitiveWordFilter path: {path}')
         self.ban_words_set = set()
         self.ban_words_list = list()
         self.ban_words_dict = dict()
@@ -30,12 +32,12 @@ class DFA:
         :param pos_list:抽取的字符串数组
         """
         ss = str()
-        print(f"draw_words> _str: {_str}")
+        # print(f"draw_words> _str: {_str}")
         inputstr = str(_str)
-        print(f"draw_words> inputstr: {inputstr}")
+        # print(f"draw_words> inputstr: {inputstr}")
         for i in range(len(inputstr)):
             s = str(inputstr[i])
-            print(f"draw_words> s: {s}")
+            # print(f"draw_words> s: {s}")
             if '\u4e00' <= s <= '\u9fa5' or '\u3400' <= s <= '\u4db5' or '\u0030' <= s <= '\u0039' \
                     or '\u0061' <= s <= '\u007a' or '\u0041' <= s <= '\u005a':
                 ss += inputstr[i]
@@ -77,7 +79,7 @@ class DFA:
         """
         if not (os.path.isfile(self.path)):
             err_msg = f'get_sensitive_words path:{self.path} is not exist'
-            print(f'DFA ERROR: {err_msg}')
+            print(f'SensitiveWordFilter ERROR: {err_msg}')
             raise Exception(err_msg)
 
         with open(self.path, 'r', encoding='utf-8-sig') as f:
@@ -167,7 +169,7 @@ class DFA:
         :param s:字符串
         """
         pos_list = list()
-        ss = DFA.draw_words(s, pos_list)
+        ss = SensitiveWordFilter.draw_words(s, pos_list)
         illegal_pos = self.find_first_illegal(ss)
         while illegal_pos != -1:
             ss = self.filter_sensitive_words(ss, illegal_pos)
@@ -186,11 +188,11 @@ class DFA:
         return s
 
 if __name__ == '__main__':
-    dfa = DFA()
+    dfa = SensitiveWordFilter()
     # s0 = dfa.get_sensitive_words()
     # print(s0)
     # 过滤实例
-    s1 = '日、你￥，妈,1,2#@3,ffsf妈 *卖 *批,'
+    s1 = '日、你￥，妈,1,2#@3,ffsf批,'
     print(f'test s1: {s1}')
     # test s1:日、你￥，妈,1,2#@3,ffsf妈 *卖 *批,
     s2 = dfa.filter_all(s1)
