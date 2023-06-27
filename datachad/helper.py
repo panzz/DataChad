@@ -32,11 +32,17 @@ from datachad.constants import (
 from datachad.io import delete_files, save_files
 from utils.log import logger
 from datachad.models import MODELS, MODES
-from utils.dfa import DFA
+# Add Filter
+from utils.sensitive_word_filter import SensitiveWordFilter
+from utils.privacy_filter import PrivacyFilter
+from utils.inject_shield import InjectShield
 
 # loads environment variables
 load_dotenv()
 
+_swf = SensitiveWordFilter()
+_pft = PrivacyFilter()
+_pft.initialize()
 
 def initialize_session_state():
     # Initialise all session state variables with defaults
@@ -334,19 +340,22 @@ def update_usage(cb: OpenAICallbackHandler) -> None:
         st.session_state["usage"].setdefault(prop, 0)
         st.session_state["usage"][prop] += value
 
+from utils.sensitive_word_filter import SensitiveWordFilter
+from utils.privacy_filter import PrivacyFilter
+from utils.inject_shield import InjectShield
 
 def generate_response(prompt: str) -> str:
     logger.debug("origin prompt:%r" %(prompt))
     # 1.可配置敏感词的 词库
-    dfa = DFA()
-    prompt = dfa.filter_all(prompt)
-    logger.debug(f"dfa.filter_all prompt: {prompt}")
-    # 2.防python代码注入
-    # https://www.zhihu.com/tardis/zm/art/22776972?source_id=1003
-    # prompt = pickle.dumps(prompt)
-    # logger.debug(f"pickle.dumps prompt: {prompt}")
-    # 4.暴力和隐私数据，防止数据泄漏
-    # call the chain to generate responses and add them to the chat history
+    prompt = _swf.filter_all(prompt)
+    logger.debug(f"_swf.filter_all prompt: {prompt}")
+    # 2.暴力和隐私数据，防止数据泄漏
+    prompt = _pft.filter(prompt)
+    logger.debug(f"_pft.filter prompt: {prompt}")
+    # 3.防python代码注入
+    prompt = InjectShield.dump_words(prompt)
+    logger.debug(f"_pft.filter prompt: {prompt}")
+
     with st.spinner("Generating response"), get_openai_callback() as cb:
         response = st.session_state["chain"](
             {"question": prompt, "chat_history": st.session_state["chat_history"]}

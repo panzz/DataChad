@@ -11,7 +11,7 @@ class SensitiveWordFilter:
     def __init__(self, path=DEFAULT_SENSITIVE_PATH, replace_char='*'):
         """
         算法敏感词过滤初始化，采用DFA(Deterministic Finite Automaton)算法
-        DFA 算法是通过提前构造出一个 树状查找结构(实际上应该说是一个 森林)，之后根据输入在该树状结构中就可以进行非常高效的查找。
+        SensitiveWordFilter 算法是通过提前构造出一个 树状查找结构(实际上应该说是一个 森林)，之后根据输入在该树状结构中就可以进行非常高效的查找。
         参考：https://github.com/spirit-yzk/sensitive_words_blocking/blob/master/dfa.py
         :param path:词库地址
         """

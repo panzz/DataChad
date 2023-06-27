@@ -21,3 +21,7 @@ faiss-cpu==1.7.4
 # For PgVector
 pgvector==0.1.8
 psycopg2-binary==2.9.6
+# Others
+pydantic==1.10.9
+spacy==3.5.3
+requests==2.31.0
