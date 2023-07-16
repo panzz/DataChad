@@ -27,10 +27,10 @@ handlers:
       backupCount: 20
       encoding: utf8
 
-loggers:
+utils.log:
   simpleExample:
     level: DEBUG
-    handlers: [console]
+    handlers: [console, info_file_handler, error_file_handler]
     propagate: no
 
 root:

@@ -14,6 +14,7 @@ with open(LOGGING_CONFIG_PATH, 'r', encoding="utf-8") as file_logging:
     # print('logging> dict_conf:%r' %(dict_conf))
     log_config.dictConfig(dict_conf)
 
+# print(f"log name:{__name__}")
 logger = logging.getLogger(__name__)
 log = logging.getLogger("log")
 

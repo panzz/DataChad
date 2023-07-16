@@ -4,7 +4,7 @@ import yaml
 import logging.config as log_config
 
 from datachad.constants import APP_NAME, DEBUG
-print('logging> DEBUG:%r' %(DEBUG))
+# print('logging> DEBUG:%r' %(DEBUG))
 
 # 读取日志配置文件内容
 with open('logging.yml', 'r', encoding="utf-8") as file_logging:
@@ -12,7 +12,8 @@ with open('logging.yml', 'r', encoding="utf-8") as file_logging:
     dict_conf = yaml.load(file_logging, Loader=yaml.FullLoader)
     # print('logging> dict_conf:%r' %(dict_conf))
     log_config.dictConfig(dict_conf)
-
+    
+# print('logging> APP_NAME:%r' %(APP_NAME))
 logger = logging.getLogger(APP_NAME)
 log = logging.getLogger("log")
 #

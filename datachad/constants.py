@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 DEBUG = True
 
@@ -21,12 +22,26 @@ ENABLE_ADVANCED_OPTIONS = True
 ENABLE_LOCAL_MODE = True
 # ENABLE_LOCAL_MODE = False
 
-MODEL_PATH = Path.cwd() / "models"
+
+# 本地模型存放的位置
+DIR = os.path.dirname(os.path.dirname(__file__))
+print (f'DIR: {DIR}')
+# MODEL_DIR = "model/"
+MODEL_DIR = os.path.join(os.path.dirname(DIR), "common_models/")
+print (f'MODEL_DIR: {MODEL_DIR}')
+
+# MODEL_PATH = Path.cwd() / "models"
+MODEL_PATH = os.path.join(os.path.dirname(DIR), "common_models")
+print (f'MODEL_PATH: {MODEL_PATH}')
 GPT4ALL_BINARY = "ggml-gpt4all-j-v1.3-groovy.bin"
+print (f'GPT4ALL_BINARY: {str(MODEL_PATH + "/" + GPT4ALL_BINARY)}')
+
 
 DATA_PATH = Path.cwd() / "data"
-# DEFAULT_DATA_SOURCE = "https://github.com/panzz/DataChad.git"
-DEFAULT_DATA_SOURCE = "https://github.com/gustavz/DataChad.git"
+# DEFAULT_DATA_SOURCE = "https://gitee.com/gitee-community/bullshit-codes.git"
+# DEFAULT_DATA_SOURCE = "https://github.com/gustavz/DataChad.git"
+# DEFAULT_DATA_SOURCE = "https://developerforum.lenovo.com/s3/dev-forum-prod/assets/107bb029-c4ea-4b51-9343-b56fc740cfd2.pdf"
+DEFAULT_DATA_SOURCE = "/Users/panzz/Vobs/_dev/_chatbot/chatgpt-longchain-datachad/data/test"
 
 MODE_HELP = """
 Choose between `OpenAI` which uses the openai library to make API calls, or `Local` which runs all operations (Embedding, Vector Stor and LLM) locally.\n

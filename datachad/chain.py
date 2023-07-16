@@ -105,7 +105,7 @@ def get_pgvector_chain(
     except Exception as e:
         logger.error(e)
     model = get_model(options, credentials)
-    logger.debug("model:%r" %(model))
+    logger.debug(f"model:{model}")
     chain = ConversationalRetrievalChain.from_llm(
         model,
         retriever=retriever,
@@ -118,6 +118,11 @@ def get_pgvector_chain(
     logger.info(f"Chain for data source {data_source} and settings {options} build!")
     return chain
 
+'''
+data_source:'https://github.com/gustavz/DataChad.git',
+options:{'mode': 'OpenAI', 'model': Model(name='gpt-3.5-turbo', mode='OpenAI', embedding='text-embedding-ada-002', path=None), 'k': 6, 'fetch_k': 30, 'chunk_size': 512, 'chunk_overlap': 128, 'temperature': 0.7, 'max_tokens': 3357, 'model_n_ctx': 1000, 'distance_metric': 'cos', 'maximal_marginal_relevance': True},
+credentials:{'openai_api_key': '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', 'activeloop_token': 'eyJhbGciOiJIUzUxMiIsImlhdCI6MTY4NzAwMDU2MSwiZXhwIjoxNzE4NjIyOTAwfQ.eyJpZCI6InBhbmxpcyJ9.oj8GZBd30x0EX9duwaAMZdO7aRFXpTVjy-lEgDgdkO-HgYJRZrqUji1DWCdErDUK8aNT3HRYleL01MSNbBOJWQ', 'activeloop_org_name': 'panlis'}
+'''
 def get_chain(
     data_source: str, options: dict, credentials: dict
 ) -> ConversationalRetrievalChain:

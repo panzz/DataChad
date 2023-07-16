@@ -101,6 +101,7 @@ def load_document(
         loader_class, loader_args = mapping[ext]
         logger.debug("loader_class:%r, loader_args:%r" %(loader_class, loader_args))
         loader = loader_class(file_path, **loader_args)
+        logger.debug("loader:%r" %(loader))
     else:
         loader = default_loader(file_path)
     return loader.load()
@@ -139,7 +140,7 @@ def load_data_source(data_source: str) -> List[Document]:
         elif is_web:
             logger.debug("data_source:%r, WEB_LOADER_MAPPING:%r" %(data_source, WEB_LOADER_MAPPING))
             docs = load_document(data_source, WEB_LOADER_MAPPING, WebBaseLoader)
-        # logger.debug("docs:%r" %(docs))
+        logger.debug("docs:%r" %(docs))
         return docs
     except Exception as e:
         error_msg = f"Failed to load your data source '{data_source}'. Consider contributing: {PROJECT_URL}"

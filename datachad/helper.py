@@ -37,6 +37,12 @@ from utils.sensitive_word_filter import SensitiveWordFilter
 from utils.privacy_filter import PrivacyFilter
 from utils.inject_shield import InjectShield
 
+# import logging
+# logger = logging.getLogger(__name__)
+# from datachad.logging import logger
+from utils.log import logger
+# logger.info('helper')
+
 # loads environment variables
 load_dotenv()
 
@@ -99,7 +105,7 @@ def authentication_form() -> None:
             help=ACTIVELOOP_HELP,
             placeholder="Optional, using ours if empty",
         )
-        logger.debug("openai_api_key:%r, activeloop_token:%r, activeloop_org_name:%r" %(openai_api_key, activeloop_token, activeloop_org_name))
+        # logger.debug("openai_api_key:%r, activeloop_token:%r, activeloop_org_name:%r" %(openai_api_key, activeloop_token, activeloop_org_name))
         submitted = st.form_submit_button("Submit")
         if submitted:
             authenticate(openai_api_key, activeloop_token, activeloop_org_name)
@@ -179,6 +185,7 @@ def advanced_options_form() -> None:
 
 def app_can_be_started():
     # Only start App if authentication is OK or Local Mode
+    logger.debug(f"auth_ok:{st.session_state['auth_ok']}, mode:{st.session_state['mode']}")
     return st.session_state["auth_ok"] or st.session_state["mode"] == MODES.LOCAL
 
 
@@ -186,6 +193,7 @@ def update_model_on_mode_change():
     # callback for mode selectbox
     # the default model must be updated for the mode
     st.session_state["model"] = MODELS.for_mode(st.session_state["mode"])[0]
+    logger.debug(f"model({not st.session_state['chain'] is None and app_can_be_started()}):{st.session_state['model']}")
     # Chain needs to be rebuild if app can be started
     if not st.session_state["chain"] is None and app_can_be_started():
         update_chain()
@@ -194,13 +202,18 @@ def update_model_on_mode_change():
 def authentication_and_options_side_bar():
     # Sidebar with Authentication and Advanced Options
     with st.sidebar:
+        modelList = MODES.all()
+        # logger.info(f"modelList 0:{modelList}")
+        modelList.remove('Local')
+        # logger.info(f"modelList:{modelList}")
         mode = st.selectbox(
             "Mode",
-            MODES.all(),
+            modelList,
             key="mode",
             help=MODE_HELP,
             on_change=update_model_on_mode_change,
         )
+        logger.debug(f"mode:{mode}")
         if mode == MODES.LOCAL and not ENABLE_LOCAL_MODE:
             st.error(LOCAL_MODE_DISABLED_HELP, icon=PAGE_ICON)
             st.stop()
@@ -247,7 +260,7 @@ def authenticate(
             openai.api_base = "http://52.74.105.58/v1"
             logger.debug("openai:%r" %(openai))
             models = openai.Model.list()
-            logger.debug("model.id:%r" %(models.data[0].id))
+            logger.debug(">>>model.id:%r" %(models.data[0].id))
             # chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello world"}])
             # logger.debug("model.content:%r" %(chat_completion.choices[0].message.content))
 
@@ -321,7 +334,8 @@ def update_chain() -> None:
             st.session_state["info_container"].info(msg, icon=PAGE_ICON)
             logger.debug("st.session_state[\"info_container\"]:%r" %(st.session_state["info_container"]))
     except Exception as e:
-        msg = f"Failed to build chain for data source **{st.session_state['data_source']}** with model **{st.session_state['model']}**: {e}"
+        # msg = f"Failed to build chain for data source **{st.session_state['data_source']}** with model **{st.session_state['model']}**: {e}"
+        msg = f"ERROR: {e}"
         logger.error(msg)
         st.session_state["info_container"].error(msg, icon=PAGE_ICON)
 
@@ -344,8 +358,13 @@ from utils.sensitive_word_filter import SensitiveWordFilter
 from utils.privacy_filter import PrivacyFilter
 from utils.inject_shield import InjectShield
 
+
+# from constants.settings import (CHATGLM_ENTER_POINT)
+# logger.debug(f"CHATGLM_ENTER_POINT 123: {CHATGLM_ENTER_POINT}")
+
+
 def generate_response(prompt: str) -> str:
-    logger.debug("origin prompt:%r" %(prompt))
+    logger.debug("origin prompt:%r, chat_history:%r" %(prompt, st.session_state["chat_history"]))
     # 1.可配置敏感词的 词库
     prompt = _swf.filter_all(prompt)
     logger.debug(f"_swf.filter_all prompt: {prompt}")

@@ -9,6 +9,7 @@ from datachad.models import MODES, get_embeddings
 
 
 def get_dataset_path(data_source: str, options: dict, credentials: dict) -> str:
+    logger.debug(f"data_source: {data_source}, options:{options}")
     dataset_name = clean_string_for_storing(data_source)
     # we need to differntiate between differently chunked datasets
     dataset_name += f"-{options['chunk_size']}-{options['chunk_overlap']}-{options['model'].embedding}"
@@ -17,7 +18,6 @@ def get_dataset_path(data_source: str, options: dict, credentials: dict) -> str:
     else:
         dataset_path = f"hub://{credentials['activeloop_org_name']}/{dataset_name}"
     return dataset_path
-
 
 def get_vector_store(data_source: str, options: dict, credentials: dict) -> VectorStore:
     logger.debug("data_source:%r, options:%r, credentials:%r" %(data_source, options, credentials))

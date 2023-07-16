@@ -10,9 +10,12 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.embeddings.openai import Embeddings, OpenAIEmbeddings
 from langchain.llms import GPT4All
 from transformers import AutoTokenizer
+from datachad.chatllm import ChatLLM
 
 from datachad.constants import GPT4ALL_BINARY, MODEL_PATH
 from utils.log import logger
+from constants.settings import (MODEL_DIR, EMBEDDING_MODEL, embedding_model_dict)
+# logger.debug(f"embedding_model_dict({EMBEDDING_MODEL}): {embedding_model_dict[EMBEDDING_MODEL]}")
 
 
 class Enum:
@@ -36,12 +39,14 @@ class MODES(Enum):
     # Add more modes as needed
     OPENAI = "OpenAI"
     LOCAL = "Local"
+    CHATLLM = "CHATLLM"
 
 
 class EMBEDDINGS(Enum):
     # Add more embeddings as needed
     OPENAI = "text-embedding-ada-002"
-    HUGGINGFACE = "sentence-transformers/all-MiniLM-L6-v2"
+    HUGGINGFACE = MODEL_DIR + "sentence-transformers/all-MiniLM-L6-v2"
+    TEXT2VEC = MODEL_DIR + embedding_model_dict[EMBEDDING_MODEL]
 
 
 class MODELS(Enum):
@@ -49,6 +54,7 @@ class MODELS(Enum):
     GPT35TURBO = Model(
         name="gpt-3.5-turbo",
         mode=MODES.OPENAI,
+        # embedding=EMBEDDINGS.HUGGINGFACE,
         embedding=EMBEDDINGS.OPENAI,
     )
     GPT4 = Model(name="gpt-4", mode=MODES.OPENAI, embedding=EMBEDDINGS.OPENAI)
@@ -56,7 +62,13 @@ class MODELS(Enum):
         name="GPT4All",
         mode=MODES.LOCAL,
         embedding=EMBEDDINGS.HUGGINGFACE,
-        path=str(MODEL_PATH / GPT4ALL_BINARY),
+        path=str(MODEL_PATH + "/" + GPT4ALL_BINARY),
+    )
+    CHATLLM = Model(
+        name="CHATLLM",
+        mode=MODES.CHATLLM,
+        # embedding=EMBEDDINGS.HUGGINGFACE,
+        embedding=EMBEDDINGS.OPENAI,
     )
 
     @classmethod
@@ -65,6 +77,7 @@ class MODELS(Enum):
 
 
 def get_model(options: dict, credentials: dict) -> BaseLanguageModel:
+    logger.debug(f"options({options['model'].name}):{options}")
     match options["model"].name:
         case MODELS.GPT35TURBO.name | MODELS.GPT4.name:
             model = ChatOpenAI(
@@ -80,6 +93,12 @@ def get_model(options: dict, credentials: dict) -> BaseLanguageModel:
                 temp=options["temperature"],
                 verbose=True,
                 callbacks=[StreamingStdOutCallbackHandler()],
+            )
+        case MODELS.CHATLLM.name:
+            model = ChatLLM(
+                model_name=options["model"].name,
+                temperature=options["temperature"],
+                verbose=True,
             )
         # Added models need to be cased here
         case _default:

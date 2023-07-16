@@ -11,9 +11,13 @@ from datachad.models import MODES, get_embeddings
 
 
 def get_dataset_path(data_source: str, options: dict, credentials: dict) -> str:
+    logger.debug(f"data_source: {data_source}, options:{options}")
     dataset_name = clean_string_for_storing(data_source)
+    logger.debug(f"dataset_name: {dataset_name}")
     # we need to differntiate between differently chunked datasets
     dataset_name += f"-{options['chunk_size']}-{options['chunk_overlap']}-{options['model'].embedding}"
+    logger.debug(f"dataset_name: {dataset_name}")
+    logger.debug(f"options['mode']: {options['mode']}")
     if options["mode"] == MODES.LOCAL:
         dataset_path = str(DATA_PATH / dataset_name)
     else:
@@ -27,9 +31,9 @@ def get_dataset_path(data_source: str, options: dict, credentials: dict) -> str:
                 user=os.environ.get("PGVECTOR_USER", "a_appconnect"),
                 password=os.environ.get("PGVECTOR_PASSWORD", "A_AppConnect"),
             )
+            logger.debug(f"dataset_path: {dataset_path}")
         except Exception as e:
-            logger.error(e)
-        logger.debug("dataset_path:%r" %(dataset_path))
+            logger.error(f"ERROR: {e}")
     return dataset_path, dataset_name
 
 
@@ -63,7 +67,7 @@ def get_pavector_vector_store(data_source: str, options: dict, credentials: dict
         docs = load_data_source(data_source)
         logger.debug("docs:%r, options:%r" %(len(docs), options))
         docs = split_docs(docs, options)
-        logger.debug("docs:%r" %(len(docs)))
+        logger.debug(f"docs:{docs}, dataset_path:{dataset_path}, dataset_name:{dataset_name}, embeddings:{embeddings}")
         vector_store = PGVector.from_documents(
             documents=docs,
             embedding=embeddings,
@@ -72,7 +76,7 @@ def get_pavector_vector_store(data_source: str, options: dict, credentials: dict
         )
         logger.debug("vector_store:%r" %(vector_store))
     except Exception as e:
-        logger.error(e)
+        logger.error(f"ERROR: {e}")
     # logger.info(f"{file} 未能成功加载")
     logger.debug("vector_store:%r" %(vector_store))
     logger.info(f"Vector Store {dataset_path} loaded!")

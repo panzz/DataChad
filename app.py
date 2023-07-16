@@ -9,6 +9,7 @@ from datachad.helper import (
     logger,
     update_chain,
 )
+from utils.log import logger
 
 # default session state variables
 initialize_session_state()
