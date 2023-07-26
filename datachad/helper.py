@@ -343,6 +343,8 @@ def update_chain() -> None:
 def update_usage(cb: OpenAICallbackHandler) -> None:
     # Accumulate API call usage via callbacks
     logger.info(f"Usage: {cb}")
+    if not cb:
+        return
     callback_properties = [
         "total_tokens",
         "prompt_tokens",
@@ -380,7 +382,7 @@ def generate_response(prompt: str) -> str:
             {"question": prompt, "chat_history": st.session_state["chat_history"]}
         )
         update_usage(cb)
-    # logger.info(f"Response: '{response}'")
+    logger.info(f"Response 0: {response}")
     logger.debug("response:%r" %(response))
     st.session_state["chat_history"].append((prompt, response["answer"]))
     return response["answer"]

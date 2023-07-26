@@ -45,14 +45,14 @@ def get_pavector_vector_store(data_source: str, options: dict, credentials: dict
     dataset_path, dataset_name = get_dataset_path(data_source, options, credentials)
     logger.debug("dataset_path:%r, dataset_name:%r" %(dataset_path, dataset_name))
     try:
-        # store = PGVector(
-        #     connection_string=dataset_path,
-        #     embedding_function=embeddings,
-        #     collection_name=dataset_name,
-        #     distance_strategy=DistanceStrategy.COSINE,
-        # )
-        # logger.debug("store:%r" %(store))
-        # retriever = store.as_retriever()
+        store = PGVector(
+            connection_string=dataset_path,
+            embedding_function=embeddings,
+            collection_name=dataset_name,
+            distance_strategy=DistanceStrategy.COSINE,
+        )
+        logger.debug("store:%r" %(store))
+        retriever = store.as_retriever()
         # if retriever:
         #     logger.info(f"Dataset '{dataset_path}' exists -> loading")
         #     vector_store = PGVector.from_existing_index(

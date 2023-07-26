@@ -1,4 +1,5 @@
 import os
+import json
 import requests
 from typing import Dict, List, Optional, Tuple, Union, Any
 
@@ -6,6 +7,9 @@ from typing import Dict, List, Optional, Tuple, Union, Any
 # from fastchat.conversation import (compute_skip_echo_len, get_default_conv_template)
 # from fastchat.serve.inference import load_model as load_fastchat_model
 from langchain.llms.base import LLM
+from langchain.callbacks.manager import (
+    CallbackManagerForLLMRun,
+)
 # from langchain.llms.utils import enforce_stop_tokens
 # from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
 
@@ -19,8 +23,11 @@ class AnswerResult:
     """
     消息实体
     """
-    history: List[List[str]] = []
-    llm_output: Optional[dict] = None
+    # {'question': 'Hi', 'chat_history': [], 'answer': 'Hello! How can I assist you today?'}
+    question: str
+    chat_history: List[List[str]] = []
+    answer: str
+    # llm_output: Optional[dict] = None
 
 class ChatLLM(LLM):
     """Wrapper around LLM Model"""
@@ -115,24 +122,40 @@ class ChatLLM(LLM):
         data = response.json() #json.loads(response.decode("utf-8"))
         return data
 
-    def generatorAnswer(self, prompt: any,
+    def generatorAnswer(self, prompt: str,
                         history: List[List[str]] = [],
                         streaming: bool = False):
 
-        logger.debug(f"prompt:{prompt},history:{history}, streaming:{streaming}")
-        generator = self.stream(prompt, history)
-        logger.debug(f"generator:{generator}")
-
+        print(f"generatorAnswer> prompt:{prompt},history:{history}, streaming:{streaming}")
+        generator = self._stream(prompt, history)
+        print(f"generatorAnswer> generator:{generator}")
+        # generator:{'response': 'Hi, how can I assist you today?', 'history': [["Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.\n\n我是文字\n\n我是文字\n\n我是文字\n\n我是文字\n\n我是文字\n\n我是文字\n\nQuestion: Hi\nHelpful Answer:", 'Hi, how can I assist you today?']], 'status': 200, 'time': '2023-07-16 19:07:54'}
         history += [[prompt, generator["response"]]]
+        # question: str
+        # chat_history: List[List[str]] = []
+        # answer: str
         answer_result = AnswerResult()
-        logger.debug(f"answer_result:{answer_result}")
-        answer_result.history = history
-        answer_result.llm_output = {"answer": generator["response"]}
+        print(f"generatorAnswer> answer_result:{answer_result}")
+        answer_result.question = prompt
+        answer_result.chat_history = history
+        print(f"generatorAnswer> history:{answer_result.chat_history}")
+        # answer_result.llm_output = {"answer": generator["response"]}
+        answer_result.answer = generator["response"]
+        # print(f"generatorAnswer> llm_output:{answer_result.llm_output}")
+        print(f"generatorAnswer> answer_result 1:{answer_result}")
         yield answer_result
 
-    def _call(self, prompt: any, stop: Optional[List[str]] = None) -> str:
-        logger.debug(f"prompt:{prompt}, Optional:{Optional}")
-        return self.generatorAnswer(prompt=prompt, history=self.history, streaming=False)
+    def _call(self, 
+              prompt: str, 
+              stop: Optional[List[str]] = None, 
+              run_manager: Optional[CallbackManagerForLLMRun] = None,
+              **kwargs: Any,
+    ) -> str:
+        print(f"_call> prompt:{prompt}, Optional:{Optional}, run_manager:{run_manager}")
+        res = self.generatorAnswer(prompt=prompt, history=self.history, streaming=False)
+        print(f"_call> res:{json.dumps(res.__dict__, ensure_ascii=False, indent=4)}")
+        # {'question': 'Hi', 'chat_history': [], 'answer': 'Hello! How can I assist you today?'}
+        return json.dumps(res.__dict__, ensure_ascii=False, indent=4)
 
 
     def load_llm(self,
